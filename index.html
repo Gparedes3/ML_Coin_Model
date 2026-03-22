@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="ML Model Coins" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <link rel="manifest" href="manifest.json" />
+    <title>ML Model Coins</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8C96A;
+            --gold-pale: #F5E6B8;
+            --dark: #0A0A0A;
+            --dark-2: #111111;
+            --dark-3: #1A1A1A;
+            --dark-4: #242424;
+            --text: #E8E0D0;
+            --text-dim: #8A7F6E;
+            --border: rgba(201, 168, 76, 0.25);
+            --border-glow: rgba(201, 168, 76, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            background: var(--dark);
+            color: var(--text);
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+        }
+
+        /* ─── NOISE TEXTURE OVERLAY ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        /* ════════════════════════════════
+       SPLASH SCREEN
+    ════════════════════════════════ */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--dark);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        #splash.hide {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+
+        .splash-medallion {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 1.5px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 40px;
+            animation: medalPulse 3s ease-in-out infinite;
+        }
+
+        .splash-medallion::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(201, 168, 76, 0.4);
+        }
+
+        .splash-medallion::after {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            border: 1px solid rgba(201, 168, 76, 0.12);
+        }
+
+        .splash-coin-svg {
+            width: 70px;
+            height: 70px;
+        }
+
+        @keyframes medalPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.0), 0 0 30px rgba(201, 168, 76, 0.15);
+            }
+
+            50% {
+                box-shadow: 0 0 0 12px rgba(201, 168, 76, 0.0), 0 0 60px rgba(201, 168, 76, 0.3);
+            }
+        }
+
+        .splash-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            color: var(--gold);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .splash-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+            margin-top: 8px;
+        }
+
+        .splash-line {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 24px auto;
+            animation: lineGrow 1.5s ease forwards;
+            transform-origin: center;
+        }
+
+        @keyframes lineGrow {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+
+            to {
+                width: 60px;
+                opacity: 1;
+            }
+        }
+
+        .splash-enter-btn {
+            margin-top: 50px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            padding: 14px 36px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.3s;
+        }
+
+        .splash-enter-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gold);
+            transform: translateX(-101%);
+            transition: transform 0.35s ease;
+        }
+
+        .splash-enter-btn:hover::before,
+        .splash-enter-btn:active::before {
+            transform: translateX(0);
+        }
+
+        .splash-enter-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .splash-enter-btn:hover span,
+        .splash-enter-btn:active span {
+            color: var(--dark);
+        }
+
+        .splash-ver {
+            position: absolute;
+            bottom: 24px;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        /* ════════════════════════════════
+       MAIN APP
+    ════════════════════════════════ */
+        #app {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.6s ease 0.3s;
+        }
+
+        #app.visible {
+            opacity: 1;
+        }
+
+        /* ── HEADER ── */
+        header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--dark-2) 0%, transparent 100%);
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+            opacity: 0.4;
+        }
+
+        .header-logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: var(--gold);
+        }
+
+        .header-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 0.08em;
+            margin-top: 1px;
+        }
+
+        .header-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-badge svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        /* ── SCROLL BODY ── */
+        .scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 20px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .scroll-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ── VIEWFINDER ── */
+        .viewfinder-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        /* Corner ornaments */
+        .corner {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-color: var(--gold);
+            border-style: solid;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .corner-tl {
+            top: 0;
+            left: 0;
+            border-width: 2px 0 0 2px;
+        }
+
+        .corner-tr {
+            top: 0;
+            right: 0;
+            border-width: 2px 2px 0 0;
+        }
+
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            border-width: 0 0 2px 2px;
+        }
+
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            border-width: 0 2px 2px 0;
+        }
+
+        #webcam-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--dark-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #webcam-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+        }
+
+        /* Scan line animation */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 4;
+            animation: scanMove 2.5s ease-in-out infinite;
+        }
+
+        @keyframes scanMove {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.7;
+            }
+
+            90% {
+                opacity: 0.7;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Placeholder state */
+        .viewfinder-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .placeholder-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 1px dashed rgba(201, 168, 76, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-ring svg {
+            width: 36px;
+            height: 36px;
+            opacity: 0.3;
+        }
+
+        .placeholder-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            letter-spacing: 0.05em;
+        }
+
+        /* ── ACTIVATE BUTTON ── */
+        #start-btn {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+            display: block;
+            padding: 16px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.3s;
+        }
+
+        #start-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gold);
+            transform: translateY(101%);
+            transition: transform 0.4s ease;
+        }
+
+        #start-btn:active::before {
+            transform: translateY(0);
+        }
+
+        #start-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        #start-btn:active span {
+            color: var(--dark);
+        }
+
+        /* ── RESULTS PANEL ── */
+        .panel {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.25em;
+            color: var(--gold);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            opacity: 0;
+        }
+
+        .live-dot.active {
+            opacity: 1;
+            animation: livePulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.6);
+            }
+        }
+
+        #label-container {
+            padding: 10px 0;
+        }
+
+        .result-item {
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .result-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            letter-spacing: 0.04em;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metal-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .result-pct {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            transition: color 0.3s;
+        }
+
+        .result-pct.winner {
+            color: var(--gold-light);
+        }
+
+        .result-bar-bg {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .result-bar-fill {
+            height: 100%;
+            border-radius: 1px;
+            width: 0%;
+            transition: width 0.25s ease;
+            background: var(--gold);
+        }
+
+        /* ── COIN INFO CARDS ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .info-card {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .info-card.active {
+            border-color: var(--border-glow);
+        }
+
+        .info-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .card-coin-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.05em;
+            position: relative;
+        }
+
+        .card-coin-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px solid currentColor;
+            opacity: 0.3;
+        }
+
+        .gold-coin {
+            background: radial-gradient(circle at 35% 35%, #F5D357, #B8860B);
+            color: #7A5C00;
+        }
+
+        .silver-coin {
+            background: radial-gradient(circle at 35% 35%, #E8E8E8, #9E9E9E);
+            color: #555;
+        }
+
+        .bronze-coin {
+            background: radial-gradient(circle at 35% 35%, #D4956A, #8B4513);
+            color: #4A2000;
+        }
+
+        .card-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        /* ── COIN DETAIL OVERLAY ── */
+        #coin-detail {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(10, 10, 10, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        #coin-detail.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .detail-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .detail-medallion {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 1.5px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 28px;
+            box-shadow: 0 0 40px rgba(201, 168, 76, 0.2);
+        }
+
+        .detail-medallion::before {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(201, 168, 76, 0.3);
+        }
+
+        .detail-coin-inner {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+        }
+
+        .detail-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            letter-spacing: 0.1em;
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .detail-value-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+
+        .detail-divider {
+            width: 50px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 0 auto 24px;
+        }
+
+        .detail-facts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .fact-box {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .fact-box-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .fact-box-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .detail-desc {
+            margin-top: 20px;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.6;
+            max-width: 280px;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            flex-shrink: 0;
+            padding: 10px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: var(--dark-2);
+        }
+
+        footer span {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+            letter-spacing: 0.06em;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(201, 168, 76, 0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════ SPLASH ═══════════ -->
+    <div id="splash">
+        <div class="splash-medallion">
+            <svg class="splash-coin-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="44" stroke="#C9A84C" stroke-width="1.5" fill="none" />
+                <circle cx="50" cy="50" r="36" stroke="#C9A84C" stroke-width="0.8" fill="none" opacity="0.5" />
+                <path d="M50 20 L53 32 L65 30 L56 39 L61 51 L50 44 L39 51 L44 39 L35 30 L47 32 Z" fill="#C9A84C"
+                    opacity="0.9" />
+                <text x="50" y="72" text-anchor="middle" font-family="Cinzel,serif" font-size="8" fill="#C9A84C"
+                    letter-spacing="2">ECUADOR</text>
+            </svg>
+        </div>
+
+        <div class="splash-title">ML MODEL<br>COINS</div>
+        <div class="splash-subtitle">Identificador Numismático</div>
+        <div class="splash-line"></div>
+
+        <button class="splash-enter-btn" onclick="enterApp()">
+            <span>INICIAR</span>
+        </button>
+
+        <div class="splash-ver">v1.0 · IA Numismática</div>
+    </div>
+
+    <!-- ═══════════ APP ═══════════ -->
+    <div id="app">
+        <header>
+            <div>
+                <div class="header-logo">ML MODEL COINS</div>
+                <div class="header-sub">Identificador Numismático · EC</div>
+            </div>
+            <div class="header-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v5l3 3" />
+                </svg>
+            </div>
+        </header>
+
+        <div class="scroll-body">
+
+            <!-- VIEWFINDER -->
+            <div class="viewfinder-wrapper">
+                <div class="corner corner-tl"></div>
+                <div class="corner corner-tr"></div>
+                <div class="corner corner-bl"></div>
+                <div class="corner corner-br"></div>
+                <div class="scan-line" id="scan-line"></div>
+
+                <div id="webcam-container">
+                    <div class="viewfinder-placeholder" id="placeholder">
+                        <div class="placeholder-ring">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1">
+                                <circle cx="12" cy="12" r="8" />
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                            </svg>
+                        </div>
+                        <div class="placeholder-text">Cámara inactiva</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVATE BTN -->
+            <button id="start-btn" onclick="init()">
+                <span>ACTIVAR ESCÁNER</span>
+            </button>
+
+            <!-- RESULTS PANEL -->
+            <div class="panel" id="results-panel" style="display:none;">
+                <div class="panel-header">
+                    <div class="panel-title">ANÁLISIS EN TIEMPO REAL</div>
+                    <div class="live-dot active" id="live-dot"></div>
+                </div>
+                <div id="label-container"></div>
+            </div>
+
+            <!-- COIN INFO CARDS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">CATÁLOGO DE MONEDAS</div>
+                </div>
+                <div style="padding: 14px 12px;">
+                    <div class="info-grid">
+                        <div class="info-card" onclick="openDetail('gold')">
+                            <div class="card-coin-icon gold-coin">$1</div>
+                            <div class="card-label">METAL</div>
+                            <div class="card-value">Oro</div>
+                        </div>
+                        <div class="info-card" onclick="openDetail('silver')">
+                            <div class="card-coin-icon silver-coin">Ag</div>
+                            <div class="card-label">METAL</div>
+                            <div class="card-value">Plata</div>
+                        </div>
+                        <div class="info-card" onclick="openDetail('bronze')">
+                            <div class="card-coin-icon bronze-coin">Cu</div>
+                            <div class="card-label">METAL</div>
+                            <div class="card-value">Bronce</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end scroll-body -->
+
+        <footer>
+            <span>Modelo Teachable Machine · ML Model Coins · Ecuador</span>
+        </footer>
+    </div>
+
+    <!-- ═══════════ COIN DETAIL OVERLAY ═══════════ -->
+    <div id="coin-detail">
+        <button class="detail-close" onclick="closeDetail()">✕</button>
+        <div class="detail-medallion">
+            <div class="detail-coin-inner" id="detail-coin-visual"></div>
+        </div>
+        <div class="detail-name" id="detail-name"></div>
+        <div class="detail-value-label" id="detail-value-label"></div>
+        <div class="detail-divider"></div>
+        <div class="detail-facts" id="detail-facts"></div>
+        <div class="detail-desc" id="detail-desc"></div>
+    </div>
+
+    <!-- ═══════════ SCRIPTS ═══════════ -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/custom-teachable-model.js"></script>
+
+    <script>
+        // ─── Service Worker ───
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => { });
+        }
+
+        // ─── Coin Data ───
+        const COIN_DATA = {
+            gold: {
+                name: 'Un Dólar',
+                metal: 'Oro (Tono Dorado)',
+                classes: ['oro', 'gold', 'dolar', 'dollar', '$1', '1 dolar', 'un dolar'],
+                gradient: 'radial-gradient(circle at 35% 35%, #F5D357, #B8860B)',
+                metalDot: '#C9A84C',
+                facts: [
+                    { label: 'DENOMINACIÓN', value: '$1.00' },
+                    { label: 'MATERIAL', value: 'Acero / Latón' },
+                    { label: 'DIÁMETRO', value: '26.5 mm' },
+                    { label: 'MASA', value: '8.1 g' },
+                ],
+                desc: 'La moneda de un dólar circula en Ecuador desde el año 2000. Su color dorado la hace inconfundible dentro del sistema de dolarización.'
+            },
+            silver: {
+                name: 'Plata · 5–50 ctvs',
+                metal: 'Plata (Tono Plateado)',
+                classes: ['plata', 'silver', '5', '10', '25', '50', 'centavos', 'ctvs'],
+                gradient: 'radial-gradient(circle at 35% 35%, #E8E8E8, #9E9E9E)',
+                metalDot: '#BDBDBD',
+                facts: [
+                    { label: 'DENOMINACIÓN', value: '5–50 ctvs' },
+                    { label: 'MATERIAL', value: 'Acero Inox.' },
+                    { label: 'DIÁMETRO', value: '15–22 mm' },
+                    { label: 'MASA', value: '1.8–4.3 g' },
+                ],
+                desc: 'Las monedas de 5, 10, 25 y 50 centavos presentan un tono plateado característico y representan la mayor parte de las transacciones diarias en Ecuador.'
+            },
+            bronze: {
+                name: 'Un Centavo',
+                metal: 'Bronce (Tono Cobrizo)',
+                classes: ['bronce', 'bronze', '1', '1 ctvo', 'un centavo', 'cobre'],
+                gradient: 'radial-gradient(circle at 35% 35%, #D4956A, #8B4513)',
+                metalDot: '#CD7F32',
+                facts: [
+                    { label: 'DENOMINACIÓN', value: '$0.01' },
+                    { label: 'MATERIAL', value: 'Acero / Cobre' },
+                    { label: 'DIÁMETRO', value: '16.5 mm' },
+                    { label: 'MASA', value: '2.5 g' },
+                ],
+                desc: 'La moneda de un centavo es la de menor denominación del sistema dolarizado ecuatoriano. Su tono cobrizo rojizo la distingue inmediatamente de las demás.'
+            }
+        };
+
+        // ─── Splash → App ───
+        function enterApp() {
+            document.getElementById('splash').classList.add('hide');
+            document.getElementById('app').classList.add('visible');
+        }
+
+        // ─── Teachable Machine ───
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/opZ_BSv3J/";
+        let model, webcam, labelContainer, maxPredictions;
+
+        async function init() {
+            const btn = document.getElementById('start-btn');
+            btn.innerHTML = '<span>CARGANDO MODELO…</span>';
+            btn.disabled = true;
+
+            const placeholder = document.getElementById('placeholder');
+            placeholder.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+                maxPredictions = model.getTotalClasses();
+
+                webcam = new tmImage.Webcam(400, 400, false);
+                await webcam.setup({ facingMode: "environment" });
+                await webcam.play();
+
+                const container = document.getElementById('webcam-container');
+                container.innerHTML = '';
+                container.appendChild(webcam.canvas);
+
+                document.getElementById('scan-line').style.display = 'block';
+
+                btn.style.display = 'none';
+                document.getElementById('results-panel').style.display = 'block';
+
+                buildLabels();
+                window.requestAnimationFrame(loop);
+            } catch (e) {
+                placeholder.innerHTML = '<div class="placeholder-text">Error al iniciar cámara</div>';
+                btn.innerHTML = '<span>REINTENTAR</span>';
+                btn.disabled = false;
+            }
+        }
+
+        function buildLabels() {
+            labelContainer = document.getElementById('label-container');
+            labelContainer.innerHTML = '';
+            for (let i = 0; i < maxPredictions; i++) {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.innerHTML = `
+        <div class="result-top">
+          <div class="result-name">
+            <span class="metal-dot" id="dot-${i}"></span>
+            <span id="name-${i}">—</span>
+          </div>
+          <span class="result-pct" id="pct-${i}">0%</span>
+        </div>
+        <div class="result-bar-bg">
+          <div class="result-bar-fill" id="bar-${i}"></div>
+        </div>`;
+                labelContainer.appendChild(item);
+            }
+        }
+
+        async function loop() {
+            webcam.update();
+            await predict();
+            window.requestAnimationFrame(loop);
+        }
+
+        async function predict() {
+            const predictions = await model.predict(webcam.canvas);
+
+            // Find winner
+            let maxP = 0, maxI = 0;
+            predictions.forEach((p, i) => { if (p.probability > maxP) { maxP = p.probability; maxI = i; } });
+
+            predictions.forEach((p, i) => {
+                const pct = Math.round(p.probability * 100);
+                const isWinner = (i === maxI && pct > 60);
+                const label = p.className;
+
+                document.getElementById(`name-${i}`).textContent = label;
+                document.getElementById(`pct-${i}`).textContent = pct + '%';
+                document.getElementById(`pct-${i}`).classList.toggle('winner', isWinner);
+                document.getElementById(`bar-${i}`).style.width = pct + '%';
+
+                // Metal dot color
+                const dot = document.getElementById(`dot-${i}`);
+                const lc = label.toLowerCase();
+                if (COIN_DATA.gold.classes.some(c => lc.includes(c))) {
+                    dot.style.background = COIN_DATA.gold.metalDot;
+                } else if (COIN_DATA.silver.classes.some(c => lc.includes(c))) {
+                    dot.style.background = COIN_DATA.silver.metalDot;
+                } else if (COIN_DATA.bronze.classes.some(c => lc.includes(c))) {
+                    dot.style.background = COIN_DATA.bronze.metalDot;
+                } else {
+                    dot.style.background = 'var(--text-dim)';
+                }
+
+                // Highlight bar winner
+                document.getElementById(`bar-${i}`).style.background =
+                    isWinner ? 'var(--gold-light)' : 'rgba(201,168,76,0.3)';
+            });
+        }
+
+        // ─── Detail Overlay ───
+        function openDetail(type) {
+            const d = COIN_DATA[type];
+            if (!d) return;
+
+            document.getElementById('detail-coin-visual').style.background = d.gradient;
+            document.getElementById('detail-coin-visual').style.borderRadius = '50%';
+            document.getElementById('detail-name').textContent = d.name;
+            document.getElementById('detail-value-label').textContent = d.metal;
+
+            const facts = document.getElementById('detail-facts');
+            facts.innerHTML = d.facts.map(f => `
+      <div class="fact-box">
+        <div class="fact-box-label">${f.label}</div>
+        <div class="fact-box-value">${f.value}</div>
+      </div>`).join('');
+
+            document.getElementById('detail-desc').textContent = d.desc;
+            document.getElementById('coin-detail').classList.add('open');
+        }
+
+        function closeDetail() {
+            document.getElementById('coin-detail').classList.remove('open');
+        }
+
+        // Close detail on backdrop tap
+        document.getElementById('coin-detail').addEventListener('click', function (e) {
+            if (e.target === this) closeDetail();
+        });
+    </script>
+</body>
+
+</html>
